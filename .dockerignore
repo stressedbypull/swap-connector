@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.*
+
+# Development files
+.vscode
+*.swp
+*.swo
+
+# Build artifacts
+bin/
+build/
+*.exe
+*.out
+
+# Test files
+*_test.go
+coverage.*
+
+# Documentation
+README.md
+docs/
+
+# macOS
+.DS_Store
+
+# Go
+vendor/
+
+.env
+*.env
+.git
+bin/
+tmp/
+*.log
+*.md
+

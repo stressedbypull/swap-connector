@@ -18,6 +18,7 @@ build/
 # Environment files
 .env
 .env.*
+*.env
 
 # Binaries and executables
 bin/
