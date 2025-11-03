@@ -1,0 +1,29 @@
+name: Simple CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: SetUp Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.0'
+          cache: true
+
+      - name: Install Dependencies
+        run: go mod download
+
+      - name: Build application
+        env:
+          CGO_ENABLED: 0
+        run: go build -o bin/server ./cmd/server

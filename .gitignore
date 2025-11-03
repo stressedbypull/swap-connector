@@ -1,0 +1,41 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+dist/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Makefile build artifacts
+build/
+*.o
+*.out
+*.exe
+
+# Environment files
+.env
+.env.*
+
+# Binaries and executables
+bin/
+*.bin
+
+# Test coverage
+coverage.out
+coverage.filtered.out
+coverage.html
+coverage.tmp
+
+# Act configuration (keep .actrc, ignore secrets)
+.secrets
+.input
+.vars
+
+# Generated documentation (keep swagger in repo)
+docs/docs.go  
+# Uncomment if you want to ignore generated swagger
+
+.actrc
