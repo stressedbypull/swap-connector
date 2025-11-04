@@ -1,0 +1,15 @@
+# Skip these folders (no secrets here)
+scan:
+  skip-dirs:
+    - "bin/"
+    - "vendor/"
+    - ".git/"
+
+# Don't fail on findings (just show them)
+exit-code: 0
+
+# Show all severity levels
+severity:
+  - CRITICAL
+  - HIGH
+  - MEDIUM

@@ -1,4 +1,4 @@
-.PHONY: run build clean tidy debug docker-up docker-down docker-logs docker-rebuild docker-health
+.PHONY: run build clean tidy debug compose-up compose-down compose-logs compose-rebuild 
 
 run:
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go run -v -race ./cmd/server/main.go
@@ -12,22 +12,28 @@ clean:
 debug:
 	go run -race ./cmd/server/main.go
 
-docker-up:
+compose-up:
 	docker compose up -d
 
-docker-down:
+compose-down:
 	docker compose down
 
-docker-logs:
+compose-logs:
 	docker compose logs -f
 
-docker-rebuild:
+compose-rebuild:
 	docker compose up -d --build
 
-docker-health:
-	@echo "=== Container Status ==="
-	@docker compose ps
-	@echo "\n=== Database Health Check ==="
-	@docker compose exec db pg_isready -U postgres -d swap_connector || echo "DB not ready"
-	@echo "\n=== API Health Check ==="
-	@curl -s http://localhost:6969/ping || echo "API not ready"
+security-scan:
+	@echo "Scanning filesystem"
+	trivy fs .
+
+security-docker:
+	@echo "Scanning Docker image"
+	docker compose build api
+	trivy image mercedes-api
+
+security-secrets: 
+	@echo "scanning secrets"
+	trivy fs --scanners secret .
+

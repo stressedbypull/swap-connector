@@ -23,7 +23,19 @@ jobs:
       - name: Install Dependencies
         run: go mod download
 
+      - name: Filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
       - name: Build application
         env:
           CGO_ENABLED: 0
         run: go build -o bin/server ./cmd/server
+      - name: Run Trivy image scan 
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'mercedes-api:latest'
+          severity: 'CRITICAL,HIGH,MEDIUM'
