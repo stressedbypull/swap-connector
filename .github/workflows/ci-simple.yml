@@ -34,6 +34,10 @@ jobs:
         env:
           CGO_ENABLED: 0
         run: go build -o bin/server ./cmd/server
+      
+      - name: Build Docker image
+        run: docker build -t mercedes-api:latest .
+      
       - name: Run Trivy image scan 
         uses: aquasecurity/trivy-action@master
         with:
