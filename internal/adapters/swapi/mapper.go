@@ -8,35 +8,48 @@ import (
 	"github.com/stressedbypull/swapi-connector/internal/domain"
 )
 
-func MapPersonToDomain(p PersonDTO) domain.Person {
-	person := domain.Person{
+// MapPersonDTOToDomain converts a SWAPI PersonDTO into domain.Person
+func MapPersonDTOToDomain(p PersonDTO) domain.Person {
+	created, err := time.Parse(time.RFC3339, p.Created)
+	if err != nil {
+		log.Printf("warn: failed to parse created date '%s': %v", p.Created, err)
+		created = time.Time{}
+	}
+
+	mass := parseMass(p.Mass)
+
+	return domain.Person{
 		Name:   p.Name,
-		Mass:   parseMass(p.Mass),
-		Create: parseCreatedDate(p.Create.GoString()),
+		Mass:   mass,
+		Create: created,
 		Films:  p.Films,
 	}
-	return person
 }
 
-func MapPlanetToDomain(pl PlanetDTO) domain.Planet {
-	var planet domain.Planet
-	return planet
-}
-
-func parseCreatedDate(s string) time.Time {
-	t, err := time.Parse(time.DateOnly, s)
+// MapPlanetDTOToDomain converts a SWAPI PlanetDTO into domain.Planet
+func MapPlanetDTOToDomain(pl PlanetDTO) domain.Planet {
+	created, err := time.Parse(time.RFC3339, pl.Created)
 	if err != nil {
-		log.Printf("failed to parse date '%s': %v", s, err)
-		t = time.Time{}
+		log.Printf("warn: failed to parse created date '%s': %v", pl.Created, err)
+		created = time.Time{}
 	}
-	return t
+
+	return domain.Planet{
+		Name:     pl.Name,
+		Resident: pl.Residents,
+		Created:  created,
+		Films:    pl.Films,
+	}
 }
 
 func parseMass(s string) int {
-	value, err := strconv.Atoi(s)
-	if err != nil {
-		log.Printf("failed to parse mass '%s': %v", s, err)
-		value = 9999999
+	if s == "unknown" || s == "" {
+		return 0
 	}
-	return value
+	v, err := strconv.Atoi(s)
+	if err != nil {
+		log.Printf("warn: failed to parse mass '%s': %v", s, err)
+		return 0
+	}
+	return v
 }
