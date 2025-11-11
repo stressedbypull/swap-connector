@@ -3,6 +3,7 @@ package swapi
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -74,14 +75,17 @@ func (c *Client) APIRetrievePersonByID(ctx context.Context, id string) (domain.P
 	defer resp.Body.Close()
 
 	// Validate HTTP status code
-	if resp.StatusCode == http.StatusNotFound {
-		return domain.Person{}, errors.ErrPersonNotFound
-	}
-	if resp.StatusCode >= 500 {
-		return domain.Person{}, errors.ErrSWAPIUnavailable
-	}
 	if resp.StatusCode != http.StatusOK {
-		return domain.Person{}, errors.ErrSWAPIUnavailable
+		switch resp.StatusCode {
+		case http.StatusNotFound:
+			return domain.Person{}, errors.ErrPersonNotFound
+		case http.StatusTooManyRequests:
+			return domain.Person{}, errors.ErrRateLimitExceeded
+		case http.StatusServiceUnavailable, http.StatusBadGateway, http.StatusGatewayTimeout:
+			return domain.Person{}, errors.ErrSWAPIUnavailable
+		default:
+			return domain.Person{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		}
 	}
 
 	var personDTO PersonDTO
@@ -109,11 +113,18 @@ func (c *Client) fetchPeoplePage(ctx context.Context, page int, search string) (
 	defer resp.Body.Close()
 
 	// Validate HTTP status code
-	if resp.StatusCode >= 500 {
-		return nil, errors.ErrSWAPIUnavailable
-	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.ErrSWAPIUnavailable
+		switch resp.StatusCode {
+		case http.StatusNotFound:
+			// For people list endpoint, 404 might mean empty results
+			return &SWAPIPeopleResponse{Count: 0, Results: []PersonDTO{}}, nil
+		case http.StatusTooManyRequests:
+			return nil, errors.ErrRateLimitExceeded
+		case http.StatusServiceUnavailable, http.StatusBadGateway, http.StatusGatewayTimeout:
+			return nil, errors.ErrSWAPIUnavailable
+		default:
+			return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		}
 	}
 
 	var response SWAPIPeopleResponse
