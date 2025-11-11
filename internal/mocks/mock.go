@@ -16,8 +16,8 @@ func NewMockSwapiRepository() *MockSwapiRepository {
 	return &mock
 }
 
-func (m *MockSwapiRepository) FetchPeople(ctx context.Context, page, pageSize int, search string) (domain.PaginatedResponse[domain.Person], error) {
-	args := m.Called(ctx, page, pageSize, search)
+func (m *MockSwapiRepository) APIRetrievePeople(ctx context.Context, page int, search string) (domain.PaginatedResponse[domain.Person], error) {
+	args := m.Called(ctx, page, search)
 	var paginatedPeople domain.PaginatedResponse[domain.Person]
 	if args.Get(0) != nil {
 		paginatedPeople = args.Get(0).(domain.PaginatedResponse[domain.Person])

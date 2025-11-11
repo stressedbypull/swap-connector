@@ -15,6 +15,11 @@ func NewPeopleService(r ports.PeopleRepository) *PeopleService {
 	return &PeopleService{repo: r}
 }
 
-func (p *PeopleService) ListPeople(ctx context.Context, page, pageSize int, search string) (domain.PaginatedResponse[domain.Person], error) {
-	return domain.PaginatedResponse[domain.Person]{}, nil
+func (p *PeopleService) ListPeople(ctx context.Context, page, pageSize int, search, sortBy, sortOrder string) (domain.PaginatedResponse[domain.Person], error) {
+	// TODO: Implement sorting and filtering
+	return p.repo.APIRetrievePeople(ctx, page, search)
+}
+
+func (p *PeopleService) GetPeopleByID(ctx context.Context, id string) (domain.Person, error) {
+	return p.repo.APIRetrievePersonByID(ctx, id)
 }
