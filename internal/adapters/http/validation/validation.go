@@ -88,3 +88,27 @@ func (v *Validator) ValidateOneOf(field, value string, allowed []string) bool {
 	v.AddError(field, fmt.Sprintf("must be one of: %s", strings.Join(allowed, ", ")), value)
 	return false
 }
+
+// ParseMass parses mass string to int, handling "unknown" and comma-separated values.
+// Returns 0 for invalid values instead of error.
+// Examples: "77" -> 77, "1,358" -> 1358, "unknown" -> 0
+func ParseMass(s string) int {
+	if s == "" || s == "unknown" {
+		return 0
+	}
+
+	// Remove commas: "1,358" -> "1358"
+	cleaned := strings.ReplaceAll(s, ",", "")
+
+	// Parse as integer
+	mass, err := strconv.Atoi(cleaned)
+	if err != nil {
+		// Try as float for values like "78.2"
+		if massFloat, floatErr := strconv.ParseFloat(cleaned, 64); floatErr == nil {
+			return int(massFloat)
+		}
+		return 0
+	}
+
+	return mass
+}

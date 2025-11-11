@@ -3,44 +3,56 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/stressedbypull/swapi-connector/internal/adapters/http/middleware"
+	"github.com/stressedbypull/swapi-connector/internal/adapters/http/response"
+	"github.com/stressedbypull/swapi-connector/internal/adapters/http/validation"
 )
 
-const (
-	// Sort order values
-	SortOrderAsc  = "asc"
-	SortOrderDesc = "desc"
+var (
+	// Allowed sort fields for people endpoint
+	allowedPeopleSortBy = []string{"name", "created", "mass"}
+	// Allowed sort orders
+	allowedSortOrder = []string{"asc", "desc"}
 )
 
-// PeopleQueryParams represents query parameters for people endpoint.
+// PeopleQueryParams represents validated query parameters for people endpoint.
 type PeopleQueryParams struct {
-	Page      int    `form:"page"`
-	Search    string `form:"search"`
-	SortBy    string `form:"sortBy" binding:"omitempty,oneof=name created mass"`
-	SortOrder string `form:"sortOrder" binding:"omitempty,oneof=asc desc"`
+	Page      int
+	Search    string
+	SortBy    string
+	SortOrder string
 }
 
 // ParsePeopleQueryParams extracts and validates query parameters from the request.
-// Uses middleware for page validation and Gin's binding for other params.
-func ParsePeopleQueryParams(c *gin.Context) PeopleQueryParams {
-	// Get page from middleware (already validated)
+// Returns false if validation fails (response already sent).
+func ParsePeopleQueryParams(c *gin.Context) (PeopleQueryParams, bool) {
+	// Get page from pagination middleware (already validated)
 	paginationParams := middleware.GetPaginationParams(c)
 
-	// Bind and validate other query params
-	var query PeopleQueryParams
-	if err := c.ShouldBindQuery(&query); err != nil {
-		// If validation fails, use defaults
-		query = PeopleQueryParams{
-			SortOrder: SortOrderAsc,
-		}
+	// Get search/sort from query middleware
+	queryParams := middleware.GetQueryParams(c)
+
+	// Create validator
+	validator := validation.New()
+
+	// Validate sortBy if provided
+	if queryParams.SortBy != "" {
+		validator.ValidateOneOf("sortBy", queryParams.SortBy, allowedPeopleSortBy)
 	}
 
-	// Override page with middleware value
-	query.Page = paginationParams.Page
+	// Validate sortOrder if provided
+	validator.ValidateOneOf("sortOrder", queryParams.SortOrder, allowedSortOrder)
 
-	// Set default sort order if empty
-	if query.SortOrder == "" {
-		query.SortOrder = SortOrderAsc
+	// If validation failed, return error response
+	if validator.HasErrors() {
+		response.ValidationError(c, validator.ErrorsMap())
+		return PeopleQueryParams{}, false
 	}
 
-	return query
+	// Return validated params
+	return PeopleQueryParams{
+		Page:      paginationParams.Page,
+		Search:    queryParams.Search,
+		SortBy:    queryParams.SortBy,
+		SortOrder: queryParams.SortOrder,
+	}, true
 }

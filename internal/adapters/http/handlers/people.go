@@ -21,7 +21,10 @@ func NewPeopleHandler(service ports.PeopleServiceInterface) *PeopleHandler {
 // ListPeople handles GET /people?page=1&search=luke&sortBy=name&sortOrder=asc
 func (h *PeopleHandler) ListPeople(c *gin.Context) {
 	// Parse and validate query parameters
-	params := ParsePeopleQueryParams(c)
+	params, ok := ParsePeopleQueryParams(c)
+	if !ok {
+		return // Validation error already sent
+	}
 
 	// Call service
 	result, err := h.service.ListPeople(

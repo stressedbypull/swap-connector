@@ -36,12 +36,26 @@ func main() {
 
 	// Global middleware
 	router.Use(middleware.PaginationMiddleware())
+	router.Use(middleware.QueryMiddleware())
 
 	// Health check
 	router.GET("/ping", healthCheck)
 
-	// API routes
-	router.GET("/people", peopleHandler.ListPeople)
+	// API route groups
+	api := router.Group("/api")
+	{
+		// People endpoints
+		people := api.Group("/people")
+		{
+			people.GET("", peopleHandler.ListPeople)
+		}
+
+		// Planets endpoints (TODO: implement)
+		// planets := api.Group("/planets")
+		// {
+		// 	planets.GET("", planetsHandler.ListPlanets)
+		// }
+	}
 
 	// Start server
 	log.Printf("Starting server on port %s", serverPort)

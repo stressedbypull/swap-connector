@@ -5,6 +5,8 @@ import (
 
 	"github.com/stressedbypull/swapi-connector/internal/domain"
 	"github.com/stressedbypull/swapi-connector/internal/ports"
+	"github.com/stressedbypull/swapi-connector/internal/search"
+	"github.com/stressedbypull/swapi-connector/internal/sorting"
 )
 
 // PeopleService handles business logic for people operations.
@@ -19,13 +21,27 @@ func NewPeopleService(repo ports.PeopleRepository) *PeopleService {
 	}
 }
 
-// ListPeople fetches a paginated list of people.
-// SWAPI controls pagination (10 items per page).
-// TODO: Implement sorting and search filtering.
-func (s *PeopleService) ListPeople(ctx context.Context, page int, search, sortBy, sortOrder string) (domain.PaginatedResponse[domain.Person], error) {
-	// For now, just pass through to repository
-	// In the future, apply sorting and filtering here
-	return s.repo.APIRetrievePeople(ctx, page, search)
+// ListPeople fetches a paginated list of people with search and sorting.
+func (s *PeopleService) ListPeople(ctx context.Context, page int, searchTerm, sortBy, sortOrder string) (domain.PaginatedResponse[domain.Person], error) {
+	// Fetch from repository
+	result, err := s.repo.APIRetrievePeople(ctx, page, searchTerm)
+	if err != nil {
+		return domain.PaginatedResponse[domain.Person]{}, err
+	}
+
+	// Apply search filter
+	result.Results = search.FilterPeopleByName(result.Results, searchTerm)
+
+	// Apply sorting if requested
+	if sortBy != "" {
+		sorter := sorting.NewPersonSorter(sortBy)
+		if sorter != nil {
+			ascending := sortOrder == "asc"
+			sorter.Sort(result.Results, ascending)
+		}
+	}
+
+	return result, nil
 }
 
 // GetPeopleByID fetches a single person by ID.
