@@ -16,13 +16,15 @@ test:
 	go test -v -race ./...
 
 test-coverage:
-	go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
-	go tool cover -func=coverage.out
+	go test -v -race -coverprofile=coverage.out -covermode=atomic \
+		$(shell go list ./... | grep -v -e '/cmd/' -e '/mocks' -e '/dto.go')
+	go tool cover -func=coverage.out | grep -v -e 'main.go' -e 'mock.go'
 
 coverage-html:
-	go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+	go test -v -race -coverprofile=coverage.out -covermode=atomic \
+		$(shell go list ./... | grep -v -e '/cmd/' -e '/mocks')
 	go tool cover -html=coverage.out -o coverage.html
-	@echo "Coverage report generated: coverage.html"
+	@echo "Coverage report generated: coverage.html (excludes: cmd, mocks)"
 
 debug:
 	go run -race ./cmd/server/main.go
