@@ -10,10 +10,14 @@ import (
 
 // MapPersonDTOToDomain converts a SWAPI PersonDTO into domain.Person.
 func MapPersonDTOToDomain(dto PersonDTO) domain.Person {
-	created, err := time.Parse(time.RFC3339, dto.Created)
+	var created string
+	parsedTime, err := time.Parse(time.RFC3339, dto.Created)
 	if err != nil {
 		log.Printf("warn: failed to parse created date '%s': %v", dto.Created, err)
-		created = time.Time{}
+		created = ""
+	} else {
+		// Format as YYYY-MM-DD (date only)
+		created = parsedTime.Format("2006-01-02")
 	}
 
 	mass := validation.ParseMass(dto.Mass)
@@ -42,10 +46,14 @@ func MapPeopleToDomain(dtos []PersonDTO) []domain.Person {
 
 // MapPlanetDTOToDomain converts a SWAPI PlanetDTO into domain.Planet.
 func MapPlanetDTOToDomain(dto PlanetDTO) domain.Planet {
-	created, err := time.Parse(time.RFC3339, dto.Created)
+	var created string
+	parsedTime, err := time.Parse(time.RFC3339, dto.Created)
 	if err != nil {
 		log.Printf("warn: failed to parse created date '%s': %v", dto.Created, err)
-		created = time.Time{}
+		created = ""
+	} else {
+		// Format as YYYY-MM-DD (date only)
+		created = parsedTime.Format("2006-01-02")
 	}
 
 	return domain.Planet{

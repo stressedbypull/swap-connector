@@ -44,7 +44,8 @@ func TestClient_ParsePeopleResponse(t *testing.T) {
 		// Verify domain mapping
 		assert.Equal(t, "Luke Skywalker", people[0].Name)
 		assert.Equal(t, 77, people[0].Mass)
-		assert.False(t, people[0].Create.IsZero())
+		assert.NotEmpty(t, people[0].Create)
+		assert.Equal(t, "2014-12-09", people[0].Create)
 
 		assert.Equal(t, "Darth Vader", people[1].Name)
 		assert.Equal(t, 136, people[1].Mass)

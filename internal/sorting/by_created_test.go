@@ -2,21 +2,20 @@ package sorting
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stressedbypull/swapi-connector/internal/domain"
 )
 
 func TestByCreated_Sort(t *testing.T) {
-	date1 := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
-	date2 := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
-	date3 := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
+	date1 := "2020-01-01"
+	date2 := "2021-01-01"
+	date3 := "2022-01-01"
 
 	tests := []struct {
 		name      string
 		people    []domain.Person
 		ascending bool
-		wantDates []time.Time
+		wantDates []string
 	}{
 		{
 			name: "sort ascending",
@@ -26,7 +25,7 @@ func TestByCreated_Sort(t *testing.T) {
 				{Name: "Person1", Create: date1},
 			},
 			ascending: true,
-			wantDates: []time.Time{date1, date2, date3},
+			wantDates: []string{date1, date2, date3},
 		},
 		{
 			name: "sort descending",
@@ -36,7 +35,7 @@ func TestByCreated_Sort(t *testing.T) {
 				{Name: "Person3", Create: date3},
 			},
 			ascending: false,
-			wantDates: []time.Time{date3, date2, date1},
+			wantDates: []string{date3, date2, date1},
 		},
 	}
 
@@ -46,7 +45,7 @@ func TestByCreated_Sort(t *testing.T) {
 			sorter.Sort(tt.people, tt.ascending)
 
 			for i, person := range tt.people {
-				if !person.Create.Equal(tt.wantDates[i]) {
+				if person.Create != tt.wantDates[i] {
 					t.Errorf("position %d: got %v, want %v", i, person.Create, tt.wantDates[i])
 				}
 			}

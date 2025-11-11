@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/stressedbypull/swapi-connector/internal/domain"
 	errDomain "github.com/stressedbypull/swapi-connector/internal/errors"
@@ -15,9 +14,9 @@ import (
 
 func TestPeopleService_ListPeople(t *testing.T) {
 	// Setup test data
-	date1 := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
-	date2 := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
-	date3 := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
+	date1 := "2020-01-01"
+	date2 := "2021-01-01"
+	date3 := "2022-01-01"
 
 	tests := []struct {
 		name              string
@@ -44,8 +43,8 @@ func TestPeopleService_ListPeople(t *testing.T) {
 				Page:     1,
 				PageSize: 2,
 				Results: []domain.Person{
-					{Name: "Luke Skywalker", Mass: 77, Create: time.Now()},
-					{Name: "Darth Vader", Mass: 136, Create: time.Now()},
+					{Name: "Luke Skywalker", Mass: 77, Create: "2024-01-01"},
+					{Name: "Darth Vader", Mass: 136, Create: "2024-01-02"},
 				},
 			},
 			mockError:    nil,
@@ -68,9 +67,9 @@ func TestPeopleService_ListPeople(t *testing.T) {
 				Page:     1,
 				PageSize: 3,
 				Results: []domain.Person{
-					{Name: "Luke Skywalker", Mass: 77, Create: time.Now()},
-					{Name: "Darth Vader", Mass: 136, Create: time.Now()},
-					{Name: "Anakin Skywalker", Mass: 84, Create: time.Now()},
+					{Name: "Luke Skywalker", Mass: 77, Create: "2024-01-01"},
+					{Name: "Darth Vader", Mass: 136, Create: "2024-01-02"},
+					{Name: "Anakin Skywalker", Mass: 84, Create: "2024-01-03"},
 				},
 			},
 			mockError:    nil,
@@ -94,9 +93,9 @@ func TestPeopleService_ListPeople(t *testing.T) {
 				Page:     1,
 				PageSize: 3,
 				Results: []domain.Person{
-					{Name: "Luke Skywalker", Mass: 77, Create: time.Now()},
-					{Name: "Darth Vader", Mass: 136, Create: time.Now()},
-					{Name: "Leia Organa", Mass: 49, Create: time.Now()},
+					{Name: "Luke Skywalker", Mass: 77, Create: "2024-01-01"},
+					{Name: "Darth Vader", Mass: 136, Create: "2024-01-02"},
+					{Name: "Leia Organa", Mass: 49, Create: "2024-01-03"},
 				},
 			},
 			mockError:    nil,
@@ -211,8 +210,8 @@ func TestPeopleService_ListPeople(t *testing.T) {
 				Page:     1,
 				PageSize: 2,
 				Results: []domain.Person{
-					{Name: "Zulu", Mass: 77, Create: time.Now()},
-					{Name: "Alpha", Mass: 136, Create: time.Now()},
+					{Name: "Zulu", Mass: 77, Create: "2024-01-01"},
+					{Name: "Alpha", Mass: 136, Create: "2024-01-02"},
 				},
 			},
 			mockError:    nil,
@@ -236,8 +235,8 @@ func TestPeopleService_ListPeople(t *testing.T) {
 				Page:     1,
 				PageSize: 2,
 				Results: []domain.Person{
-					{Name: "Zulu", Mass: 77, Create: time.Now()},
-					{Name: "Alpha", Mass: 136, Create: time.Now()},
+					{Name: "Zulu", Mass: 77, Create: "2024-01-01"},
+					{Name: "Alpha", Mass: 136, Create: "2024-01-02"},
 				},
 			},
 			mockError:    nil,
@@ -300,7 +299,7 @@ func TestPeopleService_GetPeopleByID(t *testing.T) {
 			mockPerson: domain.Person{
 				Name:   "Luke Skywalker",
 				Mass:   77,
-				Create: time.Now(),
+				Create: "2014-12-09",
 				Films:  []string{"film1", "film2"},
 			},
 			mockError: nil,
