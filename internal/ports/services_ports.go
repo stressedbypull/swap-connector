@@ -12,8 +12,8 @@ type PeopleServiceInterface interface {
 	GetPeopleByID(ctx context.Context, id string) (domain.Person, error)
 }
 
-// PlanetService - Interface for business logic
+// PlanetServiceInterface - Interface for planet business logic
 type PlanetServiceInterface interface {
-	ListPlanets(ctx context.Context, page int, search, sortBy, sortOrder string) (domain.PaginatedResponse[domain.Planet], error)
+	ListPlanets(ctx context.Context, page int, searchTerm, sortBy, sortOrder string) (domain.PaginatedResponse[domain.Planet], error)
 	GetPlanetByID(ctx context.Context, id string) (domain.Planet, error)
 }

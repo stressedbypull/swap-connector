@@ -2,12 +2,14 @@ package handlers
 
 import "github.com/stressedbypull/swapi-connector/internal/ports"
 
+// PlanetHandler handles HTTP requests for planet resources.
 type PlanetHandler struct {
-	Service ports.PlanetServiceInterface
+	service ports.PlanetServiceInterface // Use lowercase for consistency with PeopleHandler
 }
 
-func NewPlanetHandler(s ports.PlanetServiceInterface) *PlanetHandler {
+// NewPlanetHandler creates a new planet handler with dependency injection.
+func NewPlanetHandler(service ports.PlanetServiceInterface) *PlanetHandler {
 	return &PlanetHandler{
-		Service: s,
+		service: service,
 	}
 }

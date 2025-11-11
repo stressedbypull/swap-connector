@@ -38,11 +38,17 @@ func PaginationMiddleware() gin.HandlerFunc {
 
 // GetPaginationParams retrieves pagination params from context.
 func GetPaginationParams(c *gin.Context) PaginationParams {
-	if params, exists := c.Get("pagination"); exists {
-		return params.(PaginationParams)
+	value, exists := c.Get("pagination")
+	if !exists {
+		return PaginationParams{Page: DefaultPage}
 	}
 
-	return PaginationParams{
-		Page: DefaultPage,
+	// Safe type assertion with check
+	params, ok := value.(PaginationParams)
+	if !ok {
+		// Defensive: return default if type assertion fails
+		return PaginationParams{Page: DefaultPage}
 	}
+
+	return params
 }
