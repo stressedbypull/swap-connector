@@ -17,12 +17,12 @@ build/
 
 # Environment files
 .env
-.env.*
 *.env
 
 # Binaries and executables
 bin/
 *.bin
+server
 
 # Test coverage
 coverage.out
