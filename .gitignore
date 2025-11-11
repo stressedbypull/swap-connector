@@ -38,4 +38,8 @@ coverage.tmp
 # Generated Swagger documentation
 docs/
 
+# Architecture documentation (for interview prep only)
+ARCHITECTURE_DEFENSE.md
+VISUAL_DIAGRAMS.md
+
 .actrc

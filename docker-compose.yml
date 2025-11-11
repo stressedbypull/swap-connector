@@ -4,6 +4,12 @@ services:
     ports:
       - "6969:6969"
     restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - SERVER_PORT=${SERVER_PORT:-:6969}
+      - SWAPI_BASE_URL=${SWAPI_BASE_URL:-https://swapi.dev/api}
+      - SWAPI_PAGE_SIZE=${SWAPI_PAGE_SIZE:-15}
     deploy:
       resources:
         limits:

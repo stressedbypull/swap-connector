@@ -25,6 +25,10 @@ jobs:
           cache: true
       
       - name: Run tests
+        env:
+          SWAPI_PAGE_SIZE: 15
+          SWAPI_BASE_URL: https://swapi.dev/api
+          SERVER_PORT: :6969
         run: go test ./... -short -v -coverprofile=coverage.out
       
       - name: Coverage report
@@ -45,6 +49,9 @@ jobs:
       - name: Build binary
         env:
           CGO_ENABLED: 0
+          SWAPI_PAGE_SIZE: 15
+          SWAPI_BASE_URL: https://swapi.dev/api
+          SERVER_PORT: :6969
         run: go build -o bin/server ./cmd/server
       
       - name: Build Docker image

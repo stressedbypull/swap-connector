@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/stressedbypull/swapi-connector/internal/domain"
+	"github.com/stressedbypull/swapi-connector/internal/pagination"
 )
 
 const (
@@ -54,74 +55,15 @@ func NewClient(baseURL string, httpClient *http.Client) *Client {
 func (c *Client) APIRetrievePeople(ctx context.Context, page int, search string) (domain.PaginatedResponse[domain.Person], error) {
 	const swapiPageSize = 10 // SWAPI returns ~10 items per page
 
-	// Calculate the absolute item range we need
-	// Page 1 with pageSize 15: items 0-14 (SWAPI pages 1-2)
-	// Page 2 with pageSize 15: items 15-29 (SWAPI pages 2-3)
-	startItem := (page - 1) * c.pageSize
-	endItem := startItem + c.pageSize
-
-	// Calculate which SWAPI pages contain these items
-	startPage := startItem/swapiPageSize + 1
-	endPage := (endItem-1)/swapiPageSize + 1
-	pagesNeeded := endPage - startPage + 1
-
-	var allPeople []domain.Person
-	var totalCount int
-
-	// Fetch all necessary SWAPI pages
-	for i := 0; i < pagesNeeded; i++ {
-		currentPage := startPage + i
-
-		dto, err := c.fetchPeoplePage(ctx, currentPage, search)
-		if err != nil {
-			return domain.PaginatedResponse[domain.Person]{}, err
-		}
-
-		if i == 0 {
-			totalCount = dto.Count
-		}
-
-		// Map DTOs to domain objects
-		people := MapPeopleToDomain(dto.Results)
-		allPeople = append(allPeople, people...)
-
-		// Stop if we got all available results
-		if len(dto.Results) < swapiPageSize {
-			break
-		}
+	// Fetch aggregated data from SWAPI
+	allPeople, totalCount, err := c.fetchAggregatedPeople(ctx, page, search, swapiPageSize)
+	if err != nil {
+		return domain.PaginatedResponse[domain.Person]{}, err
 	}
 
-	// Calculate offset within the aggregated results from SWAPI
-	// If we fetched pages 2-3, we have items 10-29 from SWAPI
-	// For our page 2 (items 15-29), offset is 15 - 10 = 5
-	offsetInFetchedData := startItem - (startPage-1)*swapiPageSize
-
-	if offsetInFetchedData >= len(allPeople) {
-		// No more results
-		return domain.PaginatedResponse[domain.Person]{
-			Count:    totalCount,
-			Page:     page,
-			PageSize: 0,
-			Results:  []domain.Person{},
-		}, nil
-	}
-
-	// Slice to get exactly pageSize items (or remaining items)
-	end := offsetInFetchedData + c.pageSize
-	if end > len(allPeople) {
-		end = len(allPeople)
-	}
-
-	results := allPeople[offsetInFetchedData:end]
-
-	response := domain.PaginatedResponse[domain.Person]{
-		Count:    totalCount,
-		Page:     page,
-		PageSize: len(results),
-		Results:  results,
-	}
-
-	return response, nil
+	// Use pagination package to build the response
+	strategy := pagination.NewAggregationStrategy(page, c.pageSize, swapiPageSize)
+	return pagination.BuildResponse(allPeople, totalCount, strategy), nil
 }
 
 // APIRetrievePersonByID fetches a single person by ID from SWAPI.
@@ -151,6 +93,43 @@ func (c *Client) APIRetrievePersonByID(ctx context.Context, id string) (domain.P
 
 	person := MapPersonDTOToDomain(personDTO)
 	return person, nil
+}
+
+// fetchAggregatedPeople fetches multiple SWAPI pages and aggregates them.
+// This helper extracts the data-fetching logic from pagination logic.
+func (c *Client) fetchAggregatedPeople(ctx context.Context, page int, search string, swapiPageSize int) ([]domain.Person, int, error) {
+	// Create pagination strategy to determine which pages to fetch
+	strategy := pagination.NewAggregationStrategy(page, c.pageSize, swapiPageSize)
+	startPage, _, pagesNeeded := strategy.CalculatePageRange()
+
+	var allPeople []domain.Person
+	var totalCount int
+
+	// Fetch all necessary SWAPI pages
+	for i := 0; i < pagesNeeded; i++ {
+		currentPage := startPage + i
+
+		dto, err := c.fetchPeoplePage(ctx, currentPage, search)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		// Store total count from first response
+		if i == 0 {
+			totalCount = dto.Count
+		}
+
+		// Map DTOs to domain objects
+		people := MapPeopleToDomain(dto.Results)
+		allPeople = append(allPeople, people...)
+
+		// Stop if we got all available results (partial page)
+		if len(dto.Results) < swapiPageSize {
+			break
+		}
+	}
+
+	return allPeople, totalCount, nil
 }
 
 // fetchPeoplePage performs HTTP request to SWAPI people endpoint.
