@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,34 +10,46 @@ import (
 	"github.com/stressedbypull/swapi-connector/internal/services"
 )
 
+const (
+	swapiBaseURL = "https://swapi.dev/api"
+	serverPort   = ":6969"
+)
+
 func main() {
-	// Dependency Injection Setup
-	// 1. Infrastructure: HTTP client (can be mocked for testing)
+	// Dependency Injection: Infrastructure -> Adapter -> Service -> Handler
+
+	// 1. Infrastructure layer: HTTP client
 	httpClient := &http.Client{}
 
-	// 2. Adapter: SWAPI Client implements PeopleRepository & PlanetsRepository
-	swapiClient := swapi.NewClient("https://swapi.dev/api", httpClient)
+	// 2. Adapter layer: SWAPI client implements repository interfaces
+	swapiClient := swapi.NewClient(swapiBaseURL, httpClient)
 
-	// 3. Service: Business logic layer
+	// 3. Service layer: Business logic
 	peopleService := services.NewPeopleService(swapiClient)
 
-	// 4. Presentation: HTTP handlers
+	// 4. Presentation layer: HTTP handlers
 	peopleHandler := handlers.NewPeopleHandler(peopleService)
 
-	// Router setup
+	// Setup router
 	router := gin.Default()
 
-	// Health check endpoint
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "healthy",
-			"message": "pong",
-		})
-	})
+	// Health check
+	router.GET("/ping", healthCheck)
 
-	// People routes
+	// API routes
 	router.GET("/people", peopleHandler.ListPeople)
 
-	// Start server on port 6969
-	router.Run(":6969")
+	// Start server
+	log.Printf("Starting server on port %s", serverPort)
+	if err := router.Run(serverPort); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
+}
+
+// healthCheck handles health check requests.
+func healthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "healthy",
+		"message": "pong",
+	})
 }

@@ -7,19 +7,28 @@ import (
 	"github.com/stressedbypull/swapi-connector/internal/ports"
 )
 
+// PeopleService handles business logic for people operations.
 type PeopleService struct {
 	repo ports.PeopleRepository
 }
 
-func NewPeopleService(r ports.PeopleRepository) *PeopleService {
-	return &PeopleService{repo: r}
+// NewPeopleService creates a new people service with dependency injection.
+func NewPeopleService(repo ports.PeopleRepository) *PeopleService {
+	return &PeopleService{
+		repo: repo,
+	}
 }
 
-func (p *PeopleService) ListPeople(ctx context.Context, page, pageSize int, search, sortBy, sortOrder string) (domain.PaginatedResponse[domain.Person], error) {
-	// TODO: Implement sorting and filtering
-	return p.repo.APIRetrievePeople(ctx, page, search)
+// ListPeople fetches a paginated list of people.
+// pageSize is ignored as SWAPI controls pagination (10 items per page).
+// TODO: Implement sorting and search filtering.
+func (s *PeopleService) ListPeople(ctx context.Context, page, pageSize int, search, sortBy, sortOrder string) (domain.PaginatedResponse[domain.Person], error) {
+	// For now, just pass through to repository
+	// In the future, apply sorting and filtering here
+	return s.repo.APIRetrievePeople(ctx, page, search)
 }
 
-func (p *PeopleService) GetPeopleByID(ctx context.Context, id string) (domain.Person, error) {
-	return p.repo.APIRetrievePersonByID(ctx, id)
+// GetPeopleByID fetches a single person by ID.
+func (s *PeopleService) GetPeopleByID(ctx context.Context, id string) (domain.Person, error) {
+	return s.repo.APIRetrievePersonByID(ctx, id)
 }
