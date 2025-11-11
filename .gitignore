@@ -22,6 +22,7 @@ build/
 # Binaries and executables
 bin/
 *.bin
+server
 
 # Test coverage
 coverage.out
@@ -34,8 +35,11 @@ coverage.tmp
 .input
 .vars
 
-# Generated documentation (keep swagger in repo)
-docs/docs.go  
-# Uncomment if you want to ignore generated swagger
+# Generated Swagger documentation
+docs/
+
+# Architecture documentation (for interview prep only)
+ARCHITECTURE_DEFENSE.md
+VISUAL_DIAGRAMS.md
 
 .actrc

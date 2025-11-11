@@ -1,170 +1,147 @@
-# swap-connector
+# SWAPI Connector
 
-A Go API service with PostgreSQL database, containerized with Docker.
+Go API service that connects to the Star Wars API (SWAPI) with pagination, search, sorting, and comprehensive documentation.
 
-## 🚀 Quick Start
+## Features
+
+- Clean Architecture with Hexagonal/Ports and Adapters pattern
+- SOLID Principles implementation
+- OpenAPI 3.1 Swagger documentation
+- Unit tests with mocks and integration tests against real SWAPI
+- Search and sort capabilities
+- Pagination support
+- Security scanning with Trivy
+- Docker support
+
+## Quick Start
 
 ### Prerequisites
-- Go 1.25+
-- Docker & Docker Compose
-- (Optional) Trivy for security scanning
 
-### Setup
+- Go 1.25 or higher
+- Docker and Docker Compose
+- swag CLI (optional, for regenerating docs): `go install github.com/swaggo/swag/cmd/swag@latest`
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd MERCEDES
-   ```
+### Run Locally
 
-2. **Configure environment variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your values
-   ```
-
-   **Required variables:**
-   - `DB_USER` - PostgreSQL username
-   - `DB_PASSWORD` - PostgreSQL password
-   - `DB_NAME` - Database name
-   - `DB_PORT` - Database port (default: 5432)
-
-3. **Run with Docker Compose**
-   ```bash
-   make compose-up
-   ```
-
-4. **Test the API**
-   ```bash
-   curl http://localhost:6969/ping
-   # Response: {"status":"healthy","message":"pong"}
-   ```
-
-## 📋 Available Commands
-
-### Development
 ```bash
-make run              # Run locally (macOS ARM64)
-make debug            # Run with race detector
+git clone <your-repo-url>
+cd MERCEDES
+
+go mod download
+make swagger
+make run
 ```
 
-### Docker
+The server will start on port 6969:
+- API: http://localhost:6969/api/people
+- Swagger UI: http://localhost:6969/swagger/index.html
+- Health check: http://localhost:6969/ping
+## API Documentation
+
+### Endpoints
+
+#### List People
+
+```
+GET /api/people?page=1&search=luke&sortBy=name&sortOrder=asc
+```
+
+Query Parameters:
+- `page` (optional): Page number, default is 1
+- `search` (optional): Search by name, case-insensitive
+- `sortBy` (optional): Sort field - name, created, or mass
+- `sortOrder` (optional): Sort order - asc or desc, default is asc
+
+Examples:
 ```bash
-make compose-up       # Start all services
-make compose-down     # Stop all services
-make compose-logs     # View logs
-make compose-rebuild  # Rebuild and restart
+curl http://localhost:6969/api/people
+curl http://localhost:6969/api/people?search=luke
+curl http://localhost:6969/api/people?sortBy=mass&sortOrder=desc
+curl http://localhost:6969/api/people?page=2&sortBy=name
 ```
 
-### Security Scanning
+Response:
+```json
+{
+  "count": 82,
+  "page": 1,
+  "pageSize": 15,
+  "results": [
+    {
+      "name": "Luke Skywalker",
+      "mass": 77,
+      "created": "2014-12-09T13:50:51.644000Z",
+      "films": ["https://swapi.dev/api/films/1/"]
+    }
+  ]
+}
+```
+
+## Testing
+
 ```bash
-make security-scan    # Scan filesystem for vulnerabilities
-make security-docker  # Scan Docker image
-make security-secrets # Scan for secrets/credentials
+go test ./... -short -v          # Unit tests with mocks
+go test ./... -v                 # All tests including integration
+make test-coverage               # Coverage report
+make coverage-html               # HTML coverage report
 ```
 
-### Maintenance
+Test structure:
+- Unit tests in `*_test.go` files use mocks
+- Integration tests in `integrational/` directory test against real SWAPI API
+
+## Architecture
+
+Project follows Clean Architecture and Hexagonal pattern:
+
+```
+cmd/server/main.go              - Entry point with Swagger annotations
+internal/
+  domain/                       - Core entities (Person, Planet, Pagination)
+  ports/                        - Interfaces for Dependency Inversion
+  adapters/
+    http/                       - HTTP handlers, middleware, responses
+    swapi/                      - SWAPI client implementation
+  services/                     - Business logic layer
+  sorting/                      - Sorting strategies (Strategy pattern)
+  search/                       - Search and filtering logic
+  errors/                       - Domain errors
+  mocks/                        - Test mocks
+docs/                           - Generated Swagger documentation
+```
+
+### SOLID Principles
+
+- Single Responsibility: Each package has one clear purpose
+- Open/Closed: New sorters can be added without modifying existing code
+- Liskov Substitution: All sorters implement the same interface
+- Interface Segregation: Small, focused interfaces
+- Dependency Inversion: Services depend on interfaces, not implementations
+
+## Available Commands
+
 ```bash
-make tidy             # Update dependencies
-make clean            # Remove build artifacts
+make run              # Run the server
+make build            # Build binary
+make test             # Run all tests
+make test-coverage    # Run tests with coverage
+make swagger          # Generate Swagger docs
+make clean            # Clean build artifacts
+make tidy             # Tidy dependencies
 ```
 
-## 🏗️ Architecture
+## Docker
 
-This project follows Clean Architecture principles with:
-- **API Layer** - HTTP handlers (Gin framework)
-- **Service Layer** - Business logic
-- **Repository Layer** - Data access
-- **Domain Layer** - Core entities
-
-## 🔒 Security
-
-- **Trivy** scans for vulnerabilities (configured in `trivy.yaml`)
-- Secrets detection enabled
-- `.env` files are git-ignored
-
-## 🚢 Deployment (Coming Soon)
-
-- **Kubernetes** - Container orchestration
-- **Terraform** - Infrastructure as Code
-- **CI/CD** - GitHub Actions
-
----
-
-## 📖 Infrastructure Overview
-
-```
-Developer
-    ↓
-  git push
-    ↓
-┌─────────────────────────────────────┐
-│      GitHub Actions (CI/CD)         │
-│  1. Security scan (Trivy)           │
-│  2. Build Docker image              │
-│  3. Push to registry                │
-└─────────────────┬───────────────────┘
-                  ↓
-┌─────────────────────────────────────┐
-│         Terraform (IaC)             │
-│  Creates:                           │
-│  • Kubernetes cluster               │
-│  • VPC/Network                      │
-│  • RDS PostgreSQL                   │
-│  • Load Balancers                   │
-└─────────────────┬───────────────────┘
-                  ↓
-┌─────────────────────────────────────┐
-│      Kubernetes Cluster             │
-│                                     │
-│  ┌───────────────────────────────┐ │
-│  │  Deployment (3 pods)          │ │
-│  │  ┌─────┐ ┌─────┐ ┌─────┐     │ │
-│  │  │ API │ │ API │ │ API │     │ │
-│  │  └─────┘ └─────┘ └─────┘     │ │
-│  └──────────────┬────────────────┘ │
-│                 │                  │
-│  ┌──────────────┴────────────────┐ │
-│  │  Service (Load Balancer)      │ │
-│  └──────────────┬────────────────┘ │
-│                 │                  │
-│  ┌──────────────┴────────────────┐ │
-│  │  Ingress (External Access)    │ │
-│  └──────────────┬────────────────┘ │
-└─────────────────┼───────────────────┘
-                  ↓
-            Internet Users
+```bash
+docker compose up -d           # Start services
+docker compose down            # Stop services
+docker compose logs -f         # View logs
 ```
 
-### Component Breakdown
+## CI/CD
 
-**Docker** 🐳
-- Packages app + dependencies → Container image
-- Ensures consistency across environments
-
-**Kubernetes** ☸️
-- **Pod**: Runs your container
-- **Deployment**: Manages 3 replicas for high availability
-- **Service**: Internal load balancer (stable IP)
-- **Ingress**: Routes external traffic to services
-
-**Terraform** 🏗️
-- Declarative infrastructure as code
-- Creates cloud resources (cluster, database, networking)
-- Version controlled, reproducible
-
-**Flow:**
-```
-Code → CI (build + scan) → Registry → K8s pulls image → Pods serve traffic
-```
-
-## 🤝 Contributing
-
-1. Create a feature branch
-2. Make changes
-3. Run security scans
-4. Submit pull request
-
-## 📄 License
-
-[Your License Here]
+The project includes GitHub Actions workflow with separate jobs:
+- Test: Unit tests with coverage
+- Build: Go binary and Docker image
+- Scan: Security scanning with Trivy
+- Deploy: Push to GitHub Container Registry (on version tags)
