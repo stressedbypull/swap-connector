@@ -18,7 +18,21 @@ func NewPeopleHandler(service ports.PeopleServiceInterface) *PeopleHandler {
 	}
 }
 
-// ListPeople handles GET /people?page=1&search=luke&sortBy=name&sortOrder=asc
+// ListPeople godoc
+// @Summary      List Star Wars people
+// @Description  Get a paginated list of people from SWAPI with optional search and sorting
+// @Tags         people
+// @Accept       json
+// @Produce      json
+// @Param        page       query     int     false  "Page number"           default(1)       example(1)
+// @Param        search     query     string  false  "Search by name"        example(luke)
+// @Param        sortBy     query     string  false  "Sort field"            Enums(name, created, mass)  example(name)
+// @Param        sortOrder  query     string  false  "Sort order"            Enums(asc, desc)            default(asc)  example(asc)
+// @Success      200  {object}  PeopleListResponse  "Successful response with people list"
+// @Failure      400  {object}  ErrorResponse       "Invalid request parameters"
+// @Failure      404  {object}  ErrorResponse       "Person not found"
+// @Failure      500  {object}  ErrorResponse       "Internal server error"
+// @Router       /people [get]
 func (h *PeopleHandler) ListPeople(c *gin.Context) {
 	// Parse and validate query parameters
 	params, ok := ParsePeopleQueryParams(c)
@@ -35,7 +49,7 @@ func (h *PeopleHandler) ListPeople(c *gin.Context) {
 		params.SortOrder,
 	)
 	if err != nil {
-		response.InternalError(c, err.Error())
+		response.HandleError(c, err)
 		return
 	}
 

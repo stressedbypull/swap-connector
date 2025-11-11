@@ -1,4 +1,9 @@
-.PHONY: run build clean tidy debug test test-coverage coverage-html compose-up compose-down compose-logs compose-rebuild 
+.PHONY: run build clean tidy debug test test-coverage coverage-html swagger compose-up compose-down compose-logs compose-rebuild security-scan security-docker security-secrets
+
+swagger:
+	@echo "Generating Swagger documentation..."
+	@swag init -g cmd/server/main.go --output ./docs --parseDependency --parseInternal
+	@echo "✅ Swagger docs generated! View at: http://localhost:6969/swagger/index.html"
 
 run:
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go run -v -race ./cmd/server/main.go

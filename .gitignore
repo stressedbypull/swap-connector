@@ -35,8 +35,7 @@ coverage.tmp
 .input
 .vars
 
-# Generated documentation (keep swagger in repo)
-docs/docs.go  
-# Uncomment if you want to ignore generated swagger
+# Generated Swagger documentation
+docs/
 
 .actrc

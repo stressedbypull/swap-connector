@@ -1,74 +1,147 @@
-# swap-connector
+# SWAPI Connector
 
-A Go API service with PostgreSQL database, containerized with Docker.
+Go API service that connects to the Star Wars API (SWAPI) with pagination, search, sorting, and comprehensive documentation.
 
-## 🚀 Quick Start
+## Features
+
+- Clean Architecture with Hexagonal/Ports and Adapters pattern
+- SOLID Principles implementation
+- OpenAPI 3.1 Swagger documentation
+- Unit tests with mocks and integration tests against real SWAPI
+- Search and sort capabilities
+- Pagination support
+- Security scanning with Trivy
+- Docker support
+
+## Quick Start
 
 ### Prerequisites
-- Go 1.25+
-- Docker & Docker Compose
-- (Optional) Trivy for security scanning
 
-### Setup
+- Go 1.25 or higher
+- Docker and Docker Compose
+- swag CLI (optional, for regenerating docs): `go install github.com/swaggo/swag/cmd/swag@latest`
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd MERCEDES
-   ```
-1. **Structure of the project**
-cmd/
-└── server/
-    └── main.go                    ← Entry point
+### Run Locally
 
+```bash
+git clone <your-repo-url>
+cd MERCEDES
+
+go mod download
+make swagger
+make run
+```
+
+The server will start on port 6969:
+- API: http://localhost:6969/api/people
+- Swagger UI: http://localhost:6969/swagger/index.html
+- Health check: http://localhost:6969/ping
+## API Documentation
+
+### Endpoints
+
+#### List People
+
+```
+GET /api/people?page=1&search=luke&sortBy=name&sortOrder=asc
+```
+
+Query Parameters:
+- `page` (optional): Page number, default is 1
+- `search` (optional): Search by name, case-insensitive
+- `sortBy` (optional): Sort field - name, created, or mass
+- `sortOrder` (optional): Sort order - asc or desc, default is asc
+
+Examples:
+```bash
+curl http://localhost:6969/api/people
+curl http://localhost:6969/api/people?search=luke
+curl http://localhost:6969/api/people?sortBy=mass&sortOrder=desc
+curl http://localhost:6969/api/people?page=2&sortBy=name
+```
+
+Response:
+```json
+{
+  "count": 82,
+  "page": 1,
+  "pageSize": 15,
+  "results": [
+    {
+      "name": "Luke Skywalker",
+      "mass": 77,
+      "created": "2014-12-09T13:50:51.644000Z",
+      "films": ["https://swapi.dev/api/films/1/"]
+    }
+  ]
+}
+```
+
+## Testing
+
+```bash
+go test ./... -short -v          # Unit tests with mocks
+go test ./... -v                 # All tests including integration
+make test-coverage               # Coverage report
+make coverage-html               # HTML coverage report
+```
+
+Test structure:
+- Unit tests in `*_test.go` files use mocks
+- Integration tests in `integrational/` directory test against real SWAPI API
+
+## Architecture
+
+Project follows Clean Architecture and Hexagonal pattern:
+
+```
+cmd/server/main.go              - Entry point with Swagger annotations
 internal/
-├── domain/                        ← Core business logic (no dependencies!)
-│   ├── person.go                  ← type Person struct
-│   ├── planet.go                  ← type Planet struct
-│   └── pagination.go              ← type PaginatedResponse[T]
-│
-├── ports/                         ← Interfaces (Dependency Inversion)
-│   ├── repository.go              ← Repository interface
-│   └── service.go                 ← Service interface
-│
-├── adapters/                      ← Implementations
-│   ├── http/                      ← HTTP adapter (Gin)
-│   │   ├── handlers/
-│   │   │   ├── people.go          ← GET /people handlers
-│   │   │   └── planets.go         ← GET /planets handlers
-│   │   ├── middleware/
-│   │   │   └── cors.go
-│   │   └── response.go            ← Success/Error helpers
-│   │
-│   └── swapi/                     ← SWAPI adapter
-│       ├── client.go              ← HTTP client
-│       ├── mapper.go              ← DTO → Domain mapping
-│       └── dto.go                 ← SWAPI response structs
-│
-├── services/                      ← Business logic (uses ports)
-│   ├── people_service.go          ← Implements ports.PeopleService
-│   └── planet_service.go          ← Implements ports.PlanetService
-│
-├── sorting/                       ← Strategy pattern (Open/Closed)
-│   ├── sorter.go                  ← type Sorter interface
-│   ├── by_name.go                 ← ByName sorter
-│   ├── by_created.go              ← ByCreated sorter
-│   └── factory.go                 ← Creates sorter from query param
-│
-├── pagination/                    ← Pagination logic
-│   └── paginator.go               ← Paginate() function
-│
-├── search/                        ← Search logic
-│   └── filter.go                  ← FilterByName() function
-│
-└── errors/                        ← Custom errors
-    └── errors.go                  ← APIError type
+  domain/                       - Core entities (Person, Planet, Pagination)
+  ports/                        - Interfaces for Dependency Inversion
+  adapters/
+    http/                       - HTTP handlers, middleware, responses
+    swapi/                      - SWAPI client implementation
+  services/                     - Business logic layer
+  sorting/                      - Sorting strategies (Strategy pattern)
+  search/                       - Search and filtering logic
+  errors/                       - Domain errors
+  mocks/                        - Test mocks
+docs/                           - Generated Swagger documentation
+```
 
-config/
-└── config.go                      ← Configuration
+### SOLID Principles
 
-docker-compose.yml
-Dockerfile
-go.mod
-Makefile                           ← make run, make test, make docker
-README.md
+- Single Responsibility: Each package has one clear purpose
+- Open/Closed: New sorters can be added without modifying existing code
+- Liskov Substitution: All sorters implement the same interface
+- Interface Segregation: Small, focused interfaces
+- Dependency Inversion: Services depend on interfaces, not implementations
+
+## Available Commands
+
+```bash
+make run              # Run the server
+make build            # Build binary
+make test             # Run all tests
+make test-coverage    # Run tests with coverage
+make swagger          # Generate Swagger docs
+make clean            # Clean build artifacts
+make tidy             # Tidy dependencies
+```
+
+## Docker
+
+```bash
+docker compose up -d           # Start services
+docker compose down            # Stop services
+docker compose logs -f         # View logs
+```
+
+## CI/CD
+
+The project includes GitHub Actions workflow with separate jobs:
+- Test: Unit tests with coverage
+- Build: Go binary and Docker image
+- Scan: Security scanning with Trivy
+- Deploy: Push to GitHub Container Registry (on version tags)
