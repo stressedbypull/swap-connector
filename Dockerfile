@@ -12,7 +12,14 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Install swag for generating Swagger documentation
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+
 COPY . .
+
+# Generate Swagger docs
+RUN swag init -g cmd/server/main.go -o ./docs
+
 RUN go build -ldflags="-s -w" -o /server ./cmd/server/main.go
 
 # Minimal image for final container (multi-stage build)
