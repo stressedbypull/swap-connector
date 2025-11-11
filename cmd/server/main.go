@@ -35,6 +35,7 @@ func main() {
 	router := gin.Default()
 
 	// Global middleware
+	router.Use(middleware.CORS())
 	router.Use(middleware.PaginationMiddleware())
 	router.Use(middleware.QueryMiddleware())
 
