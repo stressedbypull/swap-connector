@@ -30,17 +30,22 @@ func (s *PeopleService) ListPeople(ctx context.Context, page int, searchTerm, so
 	}
 
 	// Apply search filter
-	result.Results = search.FilterPeopleByName(result.Results, searchTerm)
+	filtered, err := search.FilterPeopleByName(result.Results, searchTerm)
+	if err != nil {
+		return domain.PaginatedResponse[domain.Person]{}, err
+	}
 
 	// Apply sorting if requested
 	if sortBy != "" {
 		sorter := sorting.NewPersonSorter(sortBy)
 		if sorter != nil {
 			ascending := sortOrder == "asc"
-			sorter.Sort(result.Results, ascending)
+			sorter.Sort(filtered, ascending)
 		}
 	}
 
+	// Update results with filtered and sorted data
+	result.Results = filtered
 	return result, nil
 }
 

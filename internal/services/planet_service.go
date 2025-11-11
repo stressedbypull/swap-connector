@@ -26,7 +26,11 @@ func (s *PlanetService) ListPlanets(ctx context.Context, page int, searchTerm, s
 	}
 
 	// Apply search filter
-	result.Results = search.FilterPlanetsByName(result.Results, searchTerm)
+	filtered, err := search.FilterPlanetsByName(result.Results, searchTerm)
+	if err != nil {
+		return domain.PaginatedResponse[domain.Planet]{}, err
+	}
+	result.Results = filtered
 
 	// Apply sorting if requested
 	if sortBy != "" {
