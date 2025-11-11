@@ -15,8 +15,8 @@ func NewPlanetService(r ports.PlanetsRepository) *PlanetService {
 	return &PlanetService{repo: r}
 }
 
-func (s *PlanetService) GetAll(ctx context.Context) ([]domain.Planet, error) {
-	return s.repo.FetchPlanets(ctx)
+func (s *PlanetService) ListPlanets(ctx context.Context, page, pageSize int, search string) (domain.PaginatedResponse[domain.Planet], error) {
+	return s.repo.FetchPlanets(ctx, page, pageSize, search)
 }
 
 func (s *PlanetService) GetByID(ctx context.Context, id string) (domain.Planet, error) {
