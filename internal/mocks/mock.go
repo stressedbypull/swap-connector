@@ -1,4 +1,4 @@
-package mocksgo
+package mocks
 
 import (
 	"context"

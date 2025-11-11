@@ -25,6 +25,6 @@ func NewClient(baseURL string) *Client {
 }
 
 func (c *Client) FetchPeople(ctx context.Context, page, pageSize int, search string) (domain.PaginatedResponse[domain.Person], error) {
-
-	return domain.PaginatedResponse[domain.Person]{}, nil
+	var paginataeResponse domain.PaginatedResponse[domain.Person]
+	return paginataeResponse, nil
 }
