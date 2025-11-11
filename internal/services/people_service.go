@@ -20,9 +20,9 @@ func NewPeopleService(repo ports.PeopleRepository) *PeopleService {
 }
 
 // ListPeople fetches a paginated list of people.
-// pageSize is ignored as SWAPI controls pagination (10 items per page).
+// SWAPI controls pagination (10 items per page).
 // TODO: Implement sorting and search filtering.
-func (s *PeopleService) ListPeople(ctx context.Context, page, pageSize int, search, sortBy, sortOrder string) (domain.PaginatedResponse[domain.Person], error) {
+func (s *PeopleService) ListPeople(ctx context.Context, page int, search, sortBy, sortOrder string) (domain.PaginatedResponse[domain.Person], error) {
 	// For now, just pass through to repository
 	// In the future, apply sorting and filtering here
 	return s.repo.APIRetrievePeople(ctx, page, search)

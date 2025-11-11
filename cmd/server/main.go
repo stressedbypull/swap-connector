@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stressedbypull/swapi-connector/internal/adapters/http/handlers"
+	"github.com/stressedbypull/swapi-connector/internal/adapters/http/middleware"
 	"github.com/stressedbypull/swapi-connector/internal/adapters/swapi"
 	"github.com/stressedbypull/swapi-connector/internal/services"
 )
@@ -32,6 +33,9 @@ func main() {
 
 	// Setup router
 	router := gin.Default()
+
+	// Global middleware
+	router.Use(middleware.PaginationMiddleware())
 
 	// Health check
 	router.GET("/ping", healthCheck)

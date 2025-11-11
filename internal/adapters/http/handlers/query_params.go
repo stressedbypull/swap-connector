@@ -1,16 +1,11 @@
 package handlers
 
 import (
-	"strconv"
-
 	"github.com/gin-gonic/gin"
+	"github.com/stressedbypull/swapi-connector/internal/adapters/http/middleware"
 )
 
 const (
-	// Pagination defaults
-	DefaultPage = 1
-	MinPage     = 1
-
 	// Sort order values
 	SortOrderAsc  = "asc"
 	SortOrderDesc = "desc"
@@ -18,40 +13,34 @@ const (
 
 // PeopleQueryParams represents query parameters for people endpoint.
 type PeopleQueryParams struct {
-	Page      int
-	Search    string
-	SortBy    string
-	SortOrder string
+	Page      int    `form:"page"`
+	Search    string `form:"search"`
+	SortBy    string `form:"sortBy" binding:"omitempty,oneof=name created mass"`
+	SortOrder string `form:"sortOrder" binding:"omitempty,oneof=asc desc"`
 }
 
 // ParsePeopleQueryParams extracts and validates query parameters from the request.
+// Uses middleware for page validation and Gin's binding for other params.
 func ParsePeopleQueryParams(c *gin.Context) PeopleQueryParams {
-	params := PeopleQueryParams{
-		Page:      DefaultPage,
-		Search:    "",
-		SortBy:    "",
-		SortOrder: SortOrderAsc,
-	}
+	// Get page from middleware (already validated)
+	paginationParams := middleware.GetPaginationParams(c)
 
-	// Parse page number
-	if pageStr := c.Query("page"); pageStr != "" {
-		if page, err := strconv.Atoi(pageStr); err == nil && page >= MinPage {
-			params.Page = page
+	// Bind and validate other query params
+	var query PeopleQueryParams
+	if err := c.ShouldBindQuery(&query); err != nil {
+		// If validation fails, use defaults
+		query = PeopleQueryParams{
+			SortOrder: SortOrderAsc,
 		}
 	}
 
-	// Get search parameter
-	params.Search = c.Query("search")
+	// Override page with middleware value
+	query.Page = paginationParams.Page
 
-	// Get sort parameters
-	params.SortBy = c.Query("sortBy")
-
-	// Validate sort order
-	if sortOrder := c.Query("sortOrder"); sortOrder != "" {
-		if sortOrder == SortOrderAsc || sortOrder == SortOrderDesc {
-			params.SortOrder = sortOrder
-		}
+	// Set default sort order if empty
+	if query.SortOrder == "" {
+		query.SortOrder = SortOrderAsc
 	}
 
-	return params
+	return query
 }

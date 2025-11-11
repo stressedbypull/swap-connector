@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/stressedbypull/swapi-connector/internal/adapters/http/response"
 	"github.com/stressedbypull/swapi-connector/internal/ports"
 )
 
@@ -28,17 +27,14 @@ func (h *PeopleHandler) ListPeople(c *gin.Context) {
 	result, err := h.service.ListPeople(
 		c.Request.Context(),
 		params.Page,
-		15, // pageSize (ignored by SWAPI)
 		params.Search,
 		params.SortBy,
 		params.SortOrder,
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		response.InternalError(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	response.OK(c, result)
 }
