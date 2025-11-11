@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stressedbypull/swapi-connector/internal/domain"
+	"github.com/stressedbypull/swapi-connector/internal/errors"
 )
 
 const (
@@ -72,6 +73,17 @@ func (c *Client) APIRetrievePersonByID(ctx context.Context, id string) (domain.P
 	}
 	defer resp.Body.Close()
 
+	// Validate HTTP status code
+	if resp.StatusCode == http.StatusNotFound {
+		return domain.Person{}, errors.ErrPersonNotFound
+	}
+	if resp.StatusCode >= 500 {
+		return domain.Person{}, errors.ErrSWAPIUnavailable
+	}
+	if resp.StatusCode != http.StatusOK {
+		return domain.Person{}, errors.ErrSWAPIUnavailable
+	}
+
 	var personDTO PersonDTO
 	if err := json.NewDecoder(resp.Body).Decode(&personDTO); err != nil {
 		return domain.Person{}, err
@@ -95,6 +107,14 @@ func (c *Client) fetchPeoplePage(ctx context.Context, page int, search string) (
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	// Validate HTTP status code
+	if resp.StatusCode >= 500 {
+		return nil, errors.ErrSWAPIUnavailable
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.ErrSWAPIUnavailable
+	}
 
 	var response SWAPIPeopleResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
