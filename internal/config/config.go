@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Server ServerConfig
 	SWAPI  SWAPIConfig
+	CORS   CORSConfig
 }
 
 // ServerConfig holds server-related configuration.
@@ -22,6 +23,11 @@ type SWAPIConfig struct {
 	PageSize int // Number of items per page to return to clients
 }
 
+// CORSConfig holds CORS-related configuration.
+type CORSConfig struct {
+	AllowedOrigins string // Comma-separated list of allowed origins, or "*" for all
+}
+
 // Load loads configuration from environment variables with defaults.
 func Load() *Config {
 	return &Config{
@@ -31,6 +37,9 @@ func Load() *Config {
 		SWAPI: SWAPIConfig{
 			BaseURL:  getEnv("SWAPI_BASE_URL", "https://swapi.dev/api"),
 			PageSize: getEnvAsInt("SWAPI_PAGE_SIZE", 15),
+		},
+		CORS: CORSConfig{
+			AllowedOrigins: getEnv("CORS_ALLOWED_ORIGINS", "*"),
 		},
 	}
 }

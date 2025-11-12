@@ -21,6 +21,22 @@ Go API service that connects to the Star Wars API (SWAPI) with pagination, searc
 - Docker and Docker Compose
 - swag CLI (optional, for regenerating docs): `go install github.com/swaggo/swag/cmd/swag@latest`
 
+### Configuration
+
+The application is configured via environment variables. Copy `.env.example` to `.env` and customize as needed:
+
+```bash
+cp .env.example .env
+```
+
+Key configuration options:
+- `SERVER_PORT`: Server port (default: `:6969`)
+- `SWAPI_BASE_URL`: SWAPI base URL (default: `https://swapi.dev/api`)
+- `SWAPI_PAGE_SIZE`: Items per page (default: `15`)
+- `CORS_ALLOWED_ORIGINS`: CORS allowed origins (default: `*`)
+  - Use `*` for development to allow all origins
+  - Use comma-separated list for production: `https://example.com,https://app.example.com`
+
 ### Run Locally
 
 ```bash
