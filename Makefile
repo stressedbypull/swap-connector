@@ -1,4 +1,4 @@
-.PHONY: run build clean tidy debug test test-coverage coverage-html swagger compose-up compose-down compose-logs compose-rebuild security-scan security-docker security-secrets
+.PHONY: run build clean tidy debug test test-coverage coverage-html swagger up down logs rebuild security-scan security-docker security-secrets
 
 swagger:
 	@echo "Generating Swagger documentation..."
@@ -34,16 +34,16 @@ coverage-html:
 debug:
 	go run -race ./cmd/server/main.go
 
-compose-up:
+up:
 	docker compose up -d
 
-compose-down:
+down:
 	docker compose down
 
-compose-logs:
+logs:
 	docker compose logs -f
 
-compose-rebuild:
+rebuild:
 	docker compose up -d --build
 
 security-scan:

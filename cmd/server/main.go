@@ -11,7 +11,7 @@ import (
 	"github.com/stressedbypull/swapi-connector/internal/config"
 	"github.com/stressedbypull/swapi-connector/internal/services"
 
-	_ "github.com/stressedbypull/swapi-connector/docs" // Import generated docs
+	//_ "github.com/stressedbypull/swapi-connector/docs" // Import generated docs
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
